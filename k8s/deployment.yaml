@@ -12,6 +12,17 @@ spec:
       labels:
         app: cicd-demo
     spec:
+      # Lab shortcut: the image is built on the master only, so run the pods there.
+      # Replace this with a private registry later so any node can pull the image.
+      nodeSelector:
+        kubernetes.io/hostname: k8s-master
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
       containers:
         - name: cicd-demo
           image: cicd-demo:latest        # Jenkins replaces the tag at deploy time
