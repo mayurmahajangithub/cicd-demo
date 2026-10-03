@@ -20,14 +20,10 @@ pipeline {
 
         stage('Build image') {
             steps {
-                sh 'sudo nerdctl build -t ${IMAGE}:${TAG} --build-arg APP_VERSION=${TAG} .'
-            }
-        }
-
-        stage('Load image into Kubernetes') {
-            steps {
-                // Single-node cluster: import the image into containerd's k8s.io namespace
-                sh 'sudo nerdctl save ${IMAGE}:${TAG} | sudo ctr -n k8s.io images import -'
+                // Build straight into the k8s.io namespace, which is where the kubelet looks.
+                // No save/import step is needed on a single-node cluster.
+                sh 'sudo nerdctl --namespace k8s.io build -t ${IMAGE}:${TAG} --build-arg APP_VERSION=${TAG} .'
+                sh 'sudo nerdctl --namespace k8s.io images | grep ${IMAGE}'
             }
         }
 
